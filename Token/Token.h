@@ -3,7 +3,7 @@
 
 #include <string>
 
-enum TokenType {
+enum TokenList {
     NUMBER,     
     ID,         
     STRING,
@@ -23,7 +23,7 @@ enum TokenType {
 };
 
 struct Token {
-    TokenType type;
+    TokenList type;
     std::string value;
 };
 

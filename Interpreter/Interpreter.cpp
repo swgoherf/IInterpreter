@@ -2,12 +2,20 @@
 #include <iostream>
 #include <stdexcept>
 #include <variant>
+#include <windows.h>
 
 Interpreter::Interpreter(const std::string& input) : lexer(input) {
     currentToken = lexer.getNextToken();
 }
 
-void Interpreter::eat(TokenType type) {
+void Interpreter::debugLog(const std::string& message) {
+    static HANDLE hDebugOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    std::string formatted = "[DEBUG]: " + message + "\n";
+    WriteConsoleA(hDebugOut, formatted.c_str(), formatted.length(), NULL, NULL);
+}
+
+void Interpreter::eat(TokenList type) {
+    debugLog("Eating token: " + currentToken.value); 
     if (currentToken.type == type) {
         currentToken = lexer.getNextToken();
     } else {
@@ -108,6 +116,9 @@ void Interpreter::assignment() {
     eat(SEMI);
     
     variables[varName] = value;
+    
+    std::string valStr = std::holds_alternative<int>(value) ? std::to_string(std::get<int>(value)) : std::get<std::string>(value);
+    debugLog("ASSIGN: " + varName + " = " + valStr);
 }
 
 void Interpreter::statement() {

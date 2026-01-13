@@ -3,6 +3,7 @@
 #include <sstream>  
 #include <string>
 #include <filesystem>
+#include <windows.h>
 #include "Interpreter/Interpreter.h"
 
 bool hasExtension(const std::string& filename, const std::string& extension) {
@@ -29,6 +30,11 @@ std::string readFile(const std::string& filename) {
 }
 
 int main(int argc, char* argv[]) {
+    if (AllocConsole()) {
+        freopen("CONOUT$", "w", stdout); 
+        SetConsoleTitleA("Chago Interpreter Debug Console");
+    }
+
     if (argc != 2) {
         std::cerr << "Using: " << argv[0] << " <path_to_file>" << std::endl;
         return 1;

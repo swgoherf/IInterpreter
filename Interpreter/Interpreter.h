@@ -12,7 +12,7 @@ private:
     Token currentToken;
     std::map<std::string, std::variant<int, std::string>> variables;
 
-    void eat(TokenType type);
+    void eat(TokenList type);
     
     std::variant<int, std::string> factor();
     std::variant<int, std::string> term();
@@ -20,6 +20,7 @@ private:
     
     void assignment();
     void statement();
+    void debugLog(const std::string& message);
 
     std::variant<int, std::string> addValues(const std::variant<int, std::string>& a, const std::variant<int, std::string>& b);
 
