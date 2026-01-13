@@ -1,7 +1,7 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#include "Lexer.h"
+#include "../Lexer/Lexer.h"
 #include <map>
 #include <string>
 #include <variant>

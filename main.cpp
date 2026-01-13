@@ -3,7 +3,7 @@
 #include <sstream>  
 #include <string>
 #include <filesystem>
-#include "Interpreter.h"
+#include "Interpreter/Interpreter.h"
 
 bool hasExtension(const std::string& filename, const std::string& extension) {
     std::string ext = extension;
