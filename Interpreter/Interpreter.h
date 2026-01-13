@@ -11,6 +11,7 @@ private:
     Lexer lexer;
     Token currentToken;
     std::map<std::string, std::variant<int, std::string>> variables;
+    bool debugEnabled;
 
     void eat(TokenList type);
     
@@ -21,11 +22,17 @@ private:
     void assignment();
     void statement();
     void debugLog(const std::string& message);
+    void block();
+    bool condition();
+    void skipBlock();
+    void ifStatement();
+    void whileStatement();
+    void forStatement();
 
     std::variant<int, std::string> addValues(const std::variant<int, std::string>& a, const std::variant<int, std::string>& b);
 
 public:
-    Interpreter(const std::string& input);
+    Interpreter(const std::string& input, bool debug);
     void interpret();
 };
 

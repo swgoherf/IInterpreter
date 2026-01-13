@@ -16,7 +16,13 @@ enum TokenList {
     LPAREN,     // (
     RPAREN,     // )
     SEMI,       // ;
-
+    LBRACE, RBRACE,   // { }
+    EQ, LT, GT,       // ==, <, >
+    
+    IF, 
+    ELSE, 
+    WHILE, 
+    FOR,
     PRINT,      // print()
 
     EOF_TOKEN   

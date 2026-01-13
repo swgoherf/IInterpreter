@@ -38,18 +38,22 @@ Token Lexer::identifier() {
     }
 
     if (result == "print") return {PRINT, result};
+    if (result == "if") return {IF, result};
+    if (result == "else") return {ELSE, result};
+    if (result == "while") return {WHILE, result};
+    if (result == "for") return {FOR, result};
     return {ID, result};
 }
 
 Token Lexer::string() {
     std::string result;
-    advance(); // пропускаем открывающую кавычку
+    advance(); 
     while (currentChar != '\0' && currentChar != '"') {
         result += currentChar;
         advance();
     }
     if (currentChar == '"') {
-        advance(); // пропускаем закрывающую кавычку
+        advance(); 
         return {STRING, result};
     }
     throw std::runtime_error("Unterminated string");
@@ -72,7 +76,18 @@ Token Lexer::getNextToken() {
         if (currentChar == '/') { advance(); return {DIV, "/"}; }
         if (currentChar == '(') { advance(); return {LPAREN, "("}; }
         if (currentChar == ')') { advance(); return {RPAREN, ")"}; }
-        if (currentChar == '=') { advance(); return {ASSIGN, "="}; }
+        if (currentChar == '{') { advance(); return {LBRACE, "{"}; }
+        if (currentChar == '}') { advance(); return {RBRACE, "}"}; }
+        if (currentChar == '<') { advance(); return {LT, "<"}; }
+        if (currentChar == '>') { advance(); return {GT, ">"}; }
+        if (currentChar == '=') {
+            advance();
+            if (currentChar == '=') { 
+                advance();
+                return {EQ, "=="};
+            }
+            return {ASSIGN, "="};
+        }
         if (currentChar == ';') { advance(); return {SEMI, ";"}; }
 
         throw std::runtime_error("Unknown character");

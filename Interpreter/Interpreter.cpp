@@ -4,11 +4,12 @@
 #include <variant>
 #include <windows.h>
 
-Interpreter::Interpreter(const std::string& input) : lexer(input) {
+Interpreter::Interpreter(const std::string& input, bool debug) : lexer(input), debugEnabled(debug) { 
     currentToken = lexer.getNextToken();
 }
 
 void Interpreter::debugLog(const std::string& message) {
+    if (!debugEnabled) return;
     static HANDLE hDebugOut = GetStdHandle(STD_OUTPUT_HANDLE);
     std::string formatted = "[DEBUG]: " + message + "\n";
     WriteConsoleA(hDebugOut, formatted.c_str(), formatted.length(), NULL, NULL);
@@ -133,10 +134,158 @@ void Interpreter::statement() {
             std::cout << arg;
         }, result);
         std::cout << std::endl;
+    } else if (currentToken.type == IF) {
+        ifStatement();
+    } else if (currentToken.type == WHILE) {
+        whileStatement();
+    } else if (currentToken.type == FOR) { 
+        forStatement();
     } else if (currentToken.type == ID) {
         assignment();
+    } else if (currentToken.type == LBRACE) {
+        block();
     } else {
         throw std::runtime_error("Unknown statement");
+    }
+}
+
+void Interpreter::block() {
+    eat(LBRACE);
+    while (currentToken.type != RBRACE && currentToken.type != EOF_TOKEN) {
+        statement();
+    }
+    eat(RBRACE);
+}
+
+bool Interpreter::condition() {
+    auto left = expression();
+    Token op = currentToken;
+    
+    if (op.type == EQ || op.type == LT || op.type == GT) {
+        eat(op.type);
+        auto right = expression();
+        
+        int lVal = std::get<int>(left); 
+        int rVal = std::get<int>(right);
+        
+        if (op.type == EQ) return lVal == rVal;
+        if (op.type == LT) return lVal < rVal;
+        if (op.type == GT) return lVal > rVal;
+    }
+    return std::get<int>(left) != 0; 
+}
+
+void Interpreter::skipBlock() {
+    if (currentToken.type == LBRACE) {
+        eat(LBRACE);
+        int braceCount = 1;
+        while (braceCount > 0 && currentToken.type != EOF_TOKEN) {
+            if (currentToken.type == LBRACE) braceCount++;
+            if (currentToken.type == RBRACE) braceCount--;
+            currentToken = lexer.getNextToken();
+        }
+    } else {
+        while (currentToken.type != SEMI && currentToken.type != EOF_TOKEN) {
+            currentToken = lexer.getNextToken();
+        }
+        eat(SEMI);
+    }
+}
+
+void Interpreter::ifStatement() {
+    eat(IF);
+    eat(LPAREN);
+    bool cond = condition();
+    eat(RPAREN);
+
+    if (cond) {
+        if (currentToken.type == LBRACE) block(); else statement();
+        if (currentToken.type == ELSE) {
+            eat(ELSE);
+            skipBlock();
+        }
+    } else {
+        skipBlock();
+        if (currentToken.type == ELSE) {
+            eat(ELSE);
+            if (currentToken.type == LBRACE) block(); else statement();
+        }
+    }
+}
+
+void Interpreter::whileStatement() {
+    eat(WHILE);
+    auto loopStartLexer = lexer.getState();
+    Token loopStartToken = currentToken; 
+
+    while (true) {
+        eat(LPAREN); 
+        bool cond = condition(); 
+        eat(RPAREN);
+        
+        if (cond) {
+            if (currentToken.type == LBRACE) block(); else statement();
+     
+            lexer.setState(loopStartLexer);
+            currentToken = loopStartToken;
+        } else {
+            skipBlock();
+            break;
+        }
+    }
+}
+
+void Interpreter::forStatement() {
+    eat(FOR);
+    eat(LPAREN);
+
+    if (currentToken.type != SEMI) {
+        assignment(); 
+    } else {
+        eat(SEMI);
+    }
+
+    auto conditionState = lexer.getState();
+    Token conditionToken = currentToken;
+
+    while (true) {
+        lexer.setState(conditionState);
+        currentToken = conditionToken;
+
+        bool cond = true;
+        if (currentToken.type != SEMI) {
+            cond = condition();
+        }
+        eat(SEMI);
+
+        auto updateState = lexer.getState();
+        Token updateToken = currentToken;
+
+        while (currentToken.type != RPAREN) {
+            currentToken = lexer.getNextToken();
+        }
+        eat(RPAREN);
+
+        if (cond) {
+            if (currentToken.type == LBRACE) block(); else statement();
+
+            auto bodyEndState = lexer.getState();
+            Token bodyEndToken = currentToken;
+
+            lexer.setState(updateState);
+            currentToken = updateToken;
+
+            if (currentToken.type != RPAREN) {
+                std::string varName = currentToken.value;
+                eat(ID);
+                eat(ASSIGN);
+                variables[varName] = expression();
+            }
+
+        } else {
+            skipBlock();
+            break;
+        }
     }
 }
 

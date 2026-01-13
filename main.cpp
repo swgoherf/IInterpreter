@@ -32,7 +32,7 @@ std::string readFile(const std::string& filename) {
 int main(int argc, char* argv[]) {
     if (AllocConsole()) {
         freopen("CONOUT$", "w", stdout); 
-        SetConsoleTitleA("Chago Interpreter Debug Console");
+        SetConsoleTitleA("Debug Console");
     }
 
     if (argc != 2) {
@@ -49,8 +49,11 @@ int main(int argc, char* argv[]) {
 
     try {
         std::string sourceCode = readFile(filename);
-
-        Interpreter interpreter(sourceCode);
+        std::cout << "Enable debug mode? (y/n): ";
+        char choice;
+        std::cin >> choice;
+        bool debugMode = (choice == 'y' || choice == 'Y');
+        Interpreter interpreter(sourceCode, debugMode);
         interpreter.interpret();
 
     } catch (const std::exception& e) {

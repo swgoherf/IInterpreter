@@ -2,7 +2,13 @@
 #define LEXER_H
 
 #include <string>
+#include <cstddef> 
 #include "../Token/Token.h" 
+
+struct LexerState { 
+    size_t pos; 
+    char currentChar; 
+};
 
 class Lexer {
 private:
@@ -19,6 +25,15 @@ private:
 public:
     Lexer(const std::string& input);
     Token getNextToken();
+
+    LexerState getState() { 
+        return {pos, currentChar}; 
+    }
+    
+    void setState(LexerState state) { 
+        pos = state.pos; 
+        currentChar = state.currentChar; 
+    }
 };
 
 #endif
